@@ -35,12 +35,14 @@ const MOCK_PROPERTIES = [
 
 const Index = () => {
   return (
-    <div className="container mx-auto px-4 py-8">
-      <h1 className="text-4xl font-bold mb-8">Featured Properties</h1>
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {MOCK_PROPERTIES.map((property) => (
-          <PropertyCard key={property.id} {...property} />
-        ))}
+    <div className="min-h-screen bg-[rgb(15,23,42)]">
+      <div className="container mx-auto px-4 py-8">
+        <h1 className="text-4xl font-bold mb-8 text-white">Featured Properties</h1>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {MOCK_PROPERTIES.map((property) => (
+            <PropertyCard key={property.id} {...property} />
+          ))}
+        </div>
       </div>
     </div>
   );
