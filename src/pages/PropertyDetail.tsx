@@ -3,48 +3,52 @@ import { ContactForm } from "@/components/ContactForm";
 import { Button } from "@/components/ui/button";
 import { Link } from "react-router-dom";
 import { ArrowLeft } from "lucide-react";
+import { useQuery } from "@tanstack/react-query";
 
-const MOCK_PROPERTIES = [
-  {
-    id: "1",
-    title: "Modern Downtown Condo",
-    price: 599000,
-    bedrooms: 2,
-    bathrooms: 2,
-    sqft: 1200,
-    image: "https://images.unsplash.com/photo-1433086966358-54859d0ed716",
-    address: "123 Main St, Downtown",
-    description: "Beautiful modern condo in the heart of downtown. Features high-end finishes, open concept living, and stunning city views. Perfect for young professionals or couples.",
-  },
-  {
-    id: "2",
-    title: "Luxury Waterfront Villa",
-    price: 1299000,
-    bedrooms: 4,
-    bathrooms: 3,
-    sqft: 2800,
-    image: "https://images.unsplash.com/photo-1470071459604-3b5ec3a7fe05",
-    address: "456 Ocean Ave, Beachfront",
-    description: "Spectacular waterfront villa with panoramic ocean views. Featuring a gourmet kitchen, private pool, and direct beach access. The epitome of luxury living.",
-  },
-  {
-    id: "3",
-    title: "Cozy Suburban Home",
-    price: 449000,
-    bedrooms: 3,
-    bathrooms: 2,
-    sqft: 1800,
-    image: "https://images.unsplash.com/photo-1500375592092-40eb2168fd21",
-    address: "789 Oak Rd, Suburbs",
-    description: "Charming family home in a quiet suburban neighborhood. Includes a spacious backyard, updated kitchen, and close proximity to excellent schools.",
-  },
-];
+interface Property {
+  id: string;
+  title: string;
+  price: number;
+  bedrooms: number;
+  bathrooms: number;
+  sqft: number;
+  image: string;
+  address: string;
+  description: string;
+}
+
+const fetchProperty = async (propertyId: string): Promise<Property[]> => {
+  const response = await fetch(`https://primary-production-a84a.up.railway.app/webhook/property?id=${propertyId}`);
+  if (!response.ok) {
+    throw new Error("Failed to fetch property");
+  }
+  return response.json();
+};
 
 const PropertyDetail = () => {
   const { id } = useParams();
-  const property = MOCK_PROPERTIES.find((p) => p.id === id);
+  const { data: property, isLoading, error } = useQuery({
+    queryKey: ["property", id],
+    queryFn: () => fetchProperty(id),
+  });
 
-  if (!property) {
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-[rgb(15,23,42)] flex items-center justify-center">
+        <p className="text-white">Loading properties...</p>
+      </div>
+    );
+  }
+  
+  if (error) {
+    return (
+      <div className="min-h-screen bg-[rgb(15,23,42)] flex items-center justify-center">
+        <p className="text-red-500">Error loading properties</p>
+      </div>
+    );
+  }
+
+  if (property.length < 1) {
     return <div className="container mx-auto px-4 py-8">Property not found</div>;
   }
 
@@ -60,26 +64,26 @@ const PropertyDetail = () => {
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
           <div>
             <img
-              src={property.image}
-              alt={property.title}
+              src={property[0].image}
+              alt={property[0].title}
               className="w-full h-[400px] object-cover rounded-lg"
             />
-            <h1 className="text-3xl font-bold mt-6 text-white">{property.title}</h1>
+            <h1 className="text-3xl font-bold mt-6 text-white">{property[0].title}</h1>
             <p className="text-2xl font-semibold mt-2 text-white">
-              ${property.price.toLocaleString()}
+              ${property[0].price.toLocaleString()}
             </p>
-            <p className="text-gray-300 mt-2">{property.address}</p>
+            <p className="text-gray-300 mt-2">{property[0].address}</p>
             <div className="flex gap-4 mt-4 text-gray-300">
-              <span>{property.bedrooms} beds</span>
-              <span>{property.bathrooms} baths</span>
-              <span>{property.sqft.toLocaleString()} sqft</span>
+              <span>{property[0].bedrooms} beds</span>
+              <span>{property[0].bathrooms} baths</span>
+              <span>{property[0].sqft.toLocaleString()} sqft</span>
             </div>
-            <p className="mt-6 text-gray-300">{property.description}</p>
+            <p className="mt-6 text-gray-300">{property[0].description}</p>
           </div>
           <div>
             <div className="bg-white p-6 rounded-lg shadow-lg">
               <h2 className="text-2xl font-semibold mb-6">Contact Agent</h2>
-              <ContactForm propertyId={property.id} />
+              <ContactForm propertyId={property[0].id} />
             </div>
           </div>
         </div>
