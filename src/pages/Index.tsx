@@ -1,45 +1,52 @@
 import { PropertyCard } from "@/components/PropertyCard";
+import { useQuery } from "@tanstack/react-query";
 
-const MOCK_PROPERTIES = [
-  {
-    id: "1",
-    title: "Modern Downtown Condo",
-    price: 599000,
-    bedrooms: 2,
-    bathrooms: 2,
-    sqft: 1200,
-    image: "https://images.unsplash.com/photo-1433086966358-54859d0ed716",
-    address: "123 Main St, Downtown",
-  },
-  {
-    id: "2",
-    title: "Luxury Waterfront Villa",
-    price: 1299000,
-    bedrooms: 4,
-    bathrooms: 3,
-    sqft: 2800,
-    image: "https://images.unsplash.com/photo-1470071459604-3b5ec3a7fe05",
-    address: "456 Ocean Ave, Beachfront",
-  },
-  {
-    id: "3",
-    title: "Cozy Suburban Home",
-    price: 449000,
-    bedrooms: 3,
-    bathrooms: 2,
-    sqft: 1800,
-    image: "https://images.unsplash.com/photo-1500375592092-40eb2168fd21",
-    address: "789 Oak Rd, Suburbs",
-  },
-];
+interface Property {
+  id: string;
+  title: string;
+  price: number;
+  bedrooms: number;
+  bathrooms: number;
+  sqft: number;
+  image: string;
+  address: string;
+}
+const fetchProperties = async (): Promise<Property[]> => {
+  const response = await fetch("https://primary-production-a84a.up.railway.app/webhook/properties");
+  if (!response.ok) {
+    throw new Error("Failed to fetch properties");
+  }
+  return response.json();
+};
 
 const Index = () => {
+  const { data: properties, isLoading, error } = useQuery({
+    queryKey: ["properties"],
+    queryFn: fetchProperties,
+  });
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-[rgb(15,23,42)] flex items-center justify-center">
+        <p className="text-white">Loading properties...</p>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="min-h-screen bg-[rgb(15,23,42)] flex items-center justify-center">
+        <p className="text-red-500">Error loading properties</p>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-[rgb(15,23,42)]">
       <div className="container mx-auto px-4 py-8">
         <h1 className="text-4xl font-bold mb-8 text-white">Featured Properties</h1>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {MOCK_PROPERTIES.map((property) => (
+          {properties.map((property) => (
             <PropertyCard key={property.id} {...property} />
           ))}
         </div>
